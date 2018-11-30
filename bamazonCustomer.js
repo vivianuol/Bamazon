@@ -26,39 +26,50 @@ connection.connect(function(err) {
 function readProducts(){
     connection.query("SELECT * FROM products",function(err,res){
         if(err) throw err;
-        // console.log(res);
+        console.log(res[2].item_id);
         // displayResults(res);
         console.table(res);
-        questions();
+        questions(res);
     })   
    
 }
 
-function questions() {
+function questions(res) {
     return inquirer.prompt([
         {
             type:"input",
             name: "productId",
-            message: "what is the ID of the item you would like to purchase?",
-        }
-        //   inquirer.prompt(questions, processAnswers);
-        // {
-        //     type:"input",
-        //     name: "quantity",
-        //     message: "How many do you want to buy?"
-        // }
+            message: "what is the ID of the item you would like to purchase?(press Q to quit)",
+            validate: function validation(id) {
+                // console.log( "\n input:"+id);
+                var item_list = [];
+                 for (var i=0; i<res.length; i++ ) {
+                    //  console.log("item_id:"+res[i].item_id);
+                     item_list.push((res[i].item_id).toString(10))
+                 }
+                //  console.log(item_list);
+                //  console.log(item_list.includes(id.toString(10)));
+                    if ( item_list.includes(id.toString(10)) || id.toLowerCase().trim() == "q" ) {
+                      return true;
+                    } else {
+                    console.log("please input a valid item_id!")
+                      return false;
+                    } 
+               }         
+            }
+        
     ]).then(function(response1){
         console.log(response1);
-        if ( response1.productId.toLowerCase() === "q" || response1.productId.toLowerCase()=== "q") {
+        if ( response1.productId.toLowerCase().trim() === "q" || response1.productId.toLowerCase().trim()=== "q") {
             connection.end();
         } else{
             inquirer.prompt({
                     type:"input",
                     name: "quantity",
-                    message: "How many do you want to buy?"
+                    message: "How many do you want to buy?(press Q to quit)"
             }).then(function(response2){
                 console.log(response2)
-                if ( response2.quantity.toLowerCase() === "q" || response2.quantity.toLowerCase()=== "q") {
+                if ( response2.quantity.toLowerCase().trim() === "q" || response2.quantity.toLowerCase().trim()=== "q") {
                     connection.end();
                 } else {
                       console.log(response1,response2); calculate(response1, response2);  
